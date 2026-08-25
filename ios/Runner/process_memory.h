@@ -39,4 +39,8 @@ void test_process_memory_read(void);
 // Lấy thông tin tiến trình thực tế đã attach
 TargetProcess get_target_process_info(void);
 
+// Hàm kích hoạt Kernel Exploit DarkSword
+int darksword_exploit_entry(int argc, char* argv[]);
+
+
 

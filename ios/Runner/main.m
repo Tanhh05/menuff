@@ -679,8 +679,9 @@ void krw_sockets_leak_forever(void)
 uint64_t kernel_base;
 uint64_t kernel_slide;
 
-int main(int argc, char* argv[])
+int darksword_exploit_entry(int argc, char* argv[])
 {
+
 	init_globals();
 	struct utsname name;
 	uname(&name);
