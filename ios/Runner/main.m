@@ -545,8 +545,10 @@ bool isA18Device = false;
 
 void pe_v1(void)
 {
-	uint64_t totalSearchMappingPagesNum = isA18Device ? (0x10 * 0x10) : (0x1000 * 0x10);
-	uint64_t searchMappingSize = isA18Device ? (0x10 * PAGE_SIZE) : (0x2000 * PAGE_SIZE);
+	// Tối ưu hóa dung lượng bộ nhớ cấp phát cho thiết bị A10/non-A18 tránh sập mbuf
+	uint64_t totalSearchMappingPagesNum = isA18Device ? (0x10 * 0x10) : (0x80 * 0x10);
+	uint64_t searchMappingSize = isA18Device ? (0x10 * PAGE_SIZE) : (0x100 * PAGE_SIZE);
+
 	uint64_t totalSearchMappingSize = totalSearchMappingPagesNum * PAGE_SIZE;
 	uint64_t searchMappingNum = totalSearchMappingSize / searchMappingSize;
 

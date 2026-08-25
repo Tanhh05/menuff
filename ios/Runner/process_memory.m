@@ -22,7 +22,15 @@ bool find_process_by_name(const char *process_name, uint64_t kern_proc_head, Tar
 
     printf("[+] Đang duyệt danh sách proc_t để tìm tiến trình: %s...\n", process_name);
 
-    while (current_proc != 0) {
+    int limit = 0;
+    while (current_proc != 0 && limit < 1000) {
+        limit++;
+        // Validate con trỏ thuộc không gian bộ nhớ Kernel iOS an toàn
+        if (current_proc < 0xFFFFFFE000000000ULL || current_proc > 0xFFFFFFFFFFFFFFFEULL) {
+            printf("[-] Con trỏ proc_t không hợp lệ (0x%llx), dừng duyệt để bảo vệ Kernel!\n", current_proc);
+            break;
+        }
+
         // Đọc tên tiến trình (p_comm)
         early_kread(current_proc + OFFSET_PROC_COMM, name_buf, 16);
         name_buf[15] = '\0'; // Đảm bảo null-terminated
@@ -50,6 +58,7 @@ bool find_process_by_name(const char *process_name, uint64_t kern_proc_head, Tar
     printf("[-] Không tìm thấy tiến trình %s trong Kernel!\n", process_name);
     return false;
 }
+
 
 
 // --- 2. CÁC HÀM ĐỌC DỮ LIỆU BỘ NHỚ TRỰC TIẾP ---

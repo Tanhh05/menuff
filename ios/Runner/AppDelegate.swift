@@ -7,13 +7,6 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Trigger real DarkSword Kernel Exploit & FreeFire process search in background
-    DispatchQueue.global(qos: .userInitiated).async {
-      print("[+] Starting DarkSword Kernel Exploit & FreeFire Search Engine...")
-      darksword_exploit_entry(0, nil)
-    }
-
-
     GeneratedPluginRegistrant.register(with: self)
     let appResult = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
@@ -30,6 +23,12 @@ import UIKit
             "isAttached": proc.pid > 0
           ]
           result(infoDict)
+        } else if call.method == "startExploit" {
+          DispatchQueue.global(qos: .userInitiated).async {
+            print("[+] Manual trigger: Starting DarkSword Kernel Exploit...")
+            darksword_exploit_entry(0, nil)
+          }
+          result("STARTED")
         } else {
           result(FlutterMethodNotImplemented)
         }
@@ -38,6 +37,7 @@ import UIKit
 
     return appResult
   }
+
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)

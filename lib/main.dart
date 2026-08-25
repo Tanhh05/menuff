@@ -586,6 +586,27 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
                               });
                             },
                           ),
+                          _buildDivider(),
+
+                          // 13. KÍCH HOẠT KERNEL EXPLOIT
+                          _buildToggleItem(
+                            title: isKernelAttached ? "✅ KERNEL ATTACHED" : "⚡ KÍCH HOẠT KERNEL ATTACH",
+                            value: isKernelAttached,
+                            onTap: () async {
+                              try {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("🚀 Đang kích hoạt Kernel Exploit & Tìm kiếm FreeFire..."),
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                                await platform.invokeMethod('startExploit');
+                                _fetchMemoryInfo();
+                              } catch (e) {
+                                debugPrint("Exploit Trigger Error: $e");
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -593,6 +614,7 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
                 ),
               ),
             ),
+
 
           // 4. Memory Test Console Overlay Box on Phone Screen
           if (showMemoryTestLog)
