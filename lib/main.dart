@@ -98,7 +98,9 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
   bool espSkeletonEnabled = true;
   bool espDistanceEnabled = true;
   bool animateTargets = true;
+  bool showMemoryTestLog = true;
   LineOrigin lineOrigin = LineOrigin.bottom;
+
 
   // Simulated targets list
   late List<SimulatedPlayer> players;
@@ -547,6 +549,18 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
                               });
                             },
                           ),
+                          _buildDivider(),
+
+                          // 12. TEST LOG BỘ NHỚ OVERLAY ON PHONE SCREEN
+                          _buildToggleItem(
+                            title: "🧪 TEST LOG BỘ NHỚ",
+                            value: showMemoryTestLog,
+                            onTap: () {
+                              setState(() {
+                                showMemoryTestLog = !showMemoryTestLog;
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -554,6 +568,77 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
                 ),
               ),
             ),
+
+          // 4. Memory Test Console Overlay Box on Phone Screen
+          if (showMemoryTestLog)
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xEC0B0E14),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF00FF00), width: 1.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black54,
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.terminal, color: Color(0xFF00FF00), size: 16),
+                            SizedBox(width: 6),
+                            Text(
+                              "MEMORY LOG TEST",
+                              style: TextStyle(
+                                color: Color(0xFF00FF00),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                        InkWell(
+                          onTap: () => setState(() => showMemoryTestLog = false),
+                          child: const Icon(Icons.close, color: Colors.white70, size: 16),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.white24, height: 12),
+                    const Text(
+                      "[+] PID: 8888 • Status: ATTACHED\n"
+                      "[+] proc_kaddr  : 0xFFFF000012345678\n"
+                      "[+] vm_map_kaddr: 0xFFFF0000ABCDEF00\n"
+                      "------------------------------------\n"
+                      "├── [u8] HP State  : 1 (FULL)\n"
+                      "├── [u32] Player ID: 998877\n"
+                      "├── [float] Health : 88.50 / 100.0\n"
+                      "├── [Vector3] Pos  : X:154.2, Y:25.8, Z:620.1\n"
+                      "└── [String] Name  : \"Player_FF_VN\"",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontFamily: 'monospace',
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
         ],
       ),
     );
