@@ -109,6 +109,9 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
   String realVmMapKaddr = "0x0";
   bool isKernelAttached = false;
 
+  Timer? _memoryPollTimer;
+  bool isExploitRunning = false;
+
   // Simulated targets list
   late List<SimulatedPlayer> players;
   Timer? _simulationTimer;
@@ -119,6 +122,26 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
     _initPlayers();
     _startAnimationLoop();
     _fetchMemoryInfo();
+  }
+
+  void _startMemoryPolling() {
+    _memoryPollTimer?.cancel();
+    _memoryPollTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      await _fetchMemoryInfo();
+      if (isKernelAttached) {
+        setState(() {
+          isExploitRunning = false;
+        });
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _simulationTimer?.cancel();
+    _memoryPollTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchMemoryInfo() async {
@@ -136,6 +159,7 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
       debugPrint("MethodChannel Error: $e");
     }
   }
+
 
 
   void _initPlayers() {
@@ -590,19 +614,28 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
 
                           // 13. KÍCH HOẠT KERNEL EXPLOIT
                           _buildToggleItem(
-                            title: isKernelAttached ? "✅ KERNEL ATTACHED" : "⚡ KÍCH HOẠT KERNEL ATTACH",
-                            value: isKernelAttached,
+                            title: isKernelAttached
+                                ? "✅ KERNEL ATTACHED"
+                                : (isExploitRunning ? "⏳ ĐANG ATTACH KERNEL..." : "⚡ KÍCH HOẠT KERNEL ATTACH"),
+                            value: isKernelAttached || isExploitRunning,
                             onTap: () async {
+                              if (isKernelAttached || isExploitRunning) return;
+                              setState(() {
+                                isExploitRunning = true;
+                              });
                               try {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text("🚀 Đang kích hoạt Kernel Exploit & Tìm kiếm FreeFire..."),
-                                    duration: Duration(seconds: 3),
+                                    duration: Duration(seconds: 4),
                                   ),
                                 );
                                 await platform.invokeMethod('startExploit');
-                                _fetchMemoryInfo();
+                                _startMemoryPolling();
                               } catch (e) {
+                                setState(() {
+                                  isExploitRunning = false;
+                                });
                                 debugPrint("Exploit Trigger Error: $e");
                               }
                             },
@@ -614,6 +647,7 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
                 ),
               ),
             ),
+
 
 
           // 4. Memory Test Console Overlay Box on Phone Screen
