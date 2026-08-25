@@ -211,11 +211,7 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
     });
   }
 
-  @override
-  void dispose() {
-    _simulationTimer?.cancel();
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {
