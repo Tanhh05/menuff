@@ -139,4 +139,9 @@ void test_process_memory_read(void) {
     printf("==================================================\n\n");
 }
 
+TargetProcess get_target_process_info(void) {
+    return g_target_proc;
+}
+
+
 

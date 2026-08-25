@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -101,6 +103,11 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
   bool showMemoryTestLog = true;
   LineOrigin lineOrigin = LineOrigin.bottom;
 
+  static const platform = MethodChannel('com.freefire.esp/memory');
+  int realPid = 0;
+  String realProcKaddr = "0x0";
+  String realVmMapKaddr = "0x0";
+  bool isKernelAttached = false;
 
   // Simulated targets list
   late List<SimulatedPlayer> players;
@@ -111,7 +118,25 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
     super.initState();
     _initPlayers();
     _startAnimationLoop();
+    _fetchMemoryInfo();
   }
+
+  Future<void> _fetchMemoryInfo() async {
+    try {
+      final Map<dynamic, dynamic>? result = await platform.invokeMethod('getMemoryInfo');
+      if (result != null) {
+        setState(() {
+          realPid = result['pid'] ?? 0;
+          realProcKaddr = result['proc_kaddr'] ?? "0x0";
+          realVmMapKaddr = result['vm_map_kaddr'] ?? "0x0";
+          isKernelAttached = result['isAttached'] ?? false;
+        });
+      }
+    } catch (e) {
+      debugPrint("MethodChannel Error: $e");
+    }
+  }
+
 
   void _initPlayers() {
     players = [
@@ -617,17 +642,17 @@ class _IOSMenuOverlayScreenState extends State<IOSMenuOverlayScreen> with Single
                       ],
                     ),
                     const Divider(color: Colors.white24, height: 12),
-                    const Text(
-                      "[+] PID: 8888 • Status: ATTACHED\n"
-                      "[+] proc_kaddr  : 0xFFFF000012345678\n"
-                      "[+] vm_map_kaddr: 0xFFFF0000ABCDEF00\n"
+                    Text(
+                      "[+] PID: ${realPid > 0 ? realPid : 8888} • Status: ${isKernelAttached ? 'ATTACHED' : 'SIMULATED'}\n"
+                      "[+] proc_kaddr  : ${realProcKaddr != '0x0' ? realProcKaddr : '0xFFFF000012345678'}\n"
+                      "[+] vm_map_kaddr: ${realVmMapKaddr != '0x0' ? realVmMapKaddr : '0xFFFF0000ABCDEF00'}\n"
                       "------------------------------------\n"
                       "├── [u8] HP State  : 1 (FULL)\n"
                       "├── [u32] Player ID: 998877\n"
                       "├── [float] Health : 88.50 / 100.0\n"
                       "├── [Vector3] Pos  : X:154.2, Y:25.8, Z:620.1\n"
                       "└── [String] Name  : \"Player_FF_VN\"",
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
                         fontFamily: 'monospace',

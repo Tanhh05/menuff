@@ -36,3 +36,7 @@ NSString *kread_unity_string(uint64_t string_ptr);
 // Hàm test kiểm thử đọc bộ nhớ và in log chi tiết
 void test_process_memory_read(void);
 
+// Lấy thông tin tiến trình thực tế đã attach
+TargetProcess get_target_process_info(void);
+
+
