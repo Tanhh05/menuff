@@ -3,7 +3,7 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
-  private var channelRegistered = false
+  private static var channelRegistered = false
 
   override func application(
     _ application: UIApplication,
@@ -11,33 +11,17 @@ import UIKit
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
     let appResult = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    setupMethodChannel()
+    if let controller = window?.rootViewController as? FlutterViewController {
+      AppDelegate.registerMemoryMethodChannel(messenger: controller.binaryMessenger)
+    }
     return appResult
   }
 
-  override func applicationDidBecomeActive(_ application: UIApplication) {
-    super.applicationDidBecomeActive(application)
-    setupMethodChannel()
-  }
-
-  private func setupMethodChannel() {
+  @objc static func registerMemoryMethodChannel(messenger: FlutterBinaryMessenger) {
     guard !channelRegistered else { return }
+    channelRegistered = true
 
-    var controller: FlutterViewController? = window?.rootViewController as? FlutterViewController
-    if controller == nil {
-      for window in UIApplication.shared.windows {
-        if let rootVC = window.rootViewController as? FlutterViewController {
-          controller = rootVC
-          break
-        }
-      }
-    }
-
-    guard let flutterVC = controller else {
-      return
-    }
-
-    let channel = FlutterMethodChannel(name: "com.freefire.esp/memory", binaryMessenger: flutterVC.binaryMessenger)
+    let channel = FlutterMethodChannel(name: "com.freefire.esp/memory", binaryMessenger: messenger)
     channel.setMethodCallHandler({ (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
       if call.method == "getMemoryInfo" {
         let proc = get_target_process_info()
@@ -59,8 +43,6 @@ import UIKit
         result(FlutterMethodNotImplemented)
       }
     })
-
-    channelRegistered = true
     print("[+] MethodChannel com.freefire.esp/memory successfully registered!")
   }
 
@@ -68,3 +50,4 @@ import UIKit
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
   }
 }
+
